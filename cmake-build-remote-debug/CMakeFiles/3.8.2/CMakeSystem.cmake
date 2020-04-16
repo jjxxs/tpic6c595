@@ -1,0 +1,15 @@
+set(CMAKE_HOST_SYSTEM "Linux-4.14.134-rt63-bsp-yocto-i.mx6-pd18.1.2")
+set(CMAKE_HOST_SYSTEM_NAME "Linux")
+set(CMAKE_HOST_SYSTEM_VERSION "4.14.134-rt63-bsp-yocto-i.mx6-pd18.1.2")
+set(CMAKE_HOST_SYSTEM_PROCESSOR "armv7l")
+
+
+
+set(CMAKE_SYSTEM "Linux-4.14.134-rt63-bsp-yocto-i.mx6-pd18.1.2")
+set(CMAKE_SYSTEM_NAME "Linux")
+set(CMAKE_SYSTEM_VERSION "4.14.134-rt63-bsp-yocto-i.mx6-pd18.1.2")
+set(CMAKE_SYSTEM_PROCESSOR "armv7l")
+
+set(CMAKE_CROSSCOMPILING "FALSE")
+
+set(CMAKE_SYSTEM_LOADED 1)

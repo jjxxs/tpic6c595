@@ -1,0 +1,3 @@
+/home/apixdev/CLionProjects/tpic6c595/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/apixdev/CLionProjects/tpic6c595/cmake-build-debug/CMakeFiles/tpic6c595.dir
+/home/apixdev/CLionProjects/tpic6c595/cmake-build-debug/CMakeFiles/edit_cache.dir

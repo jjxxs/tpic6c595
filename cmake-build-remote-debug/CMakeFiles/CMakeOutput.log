@@ -1,0 +1,190 @@
+The system is: Linux - 4.14.134-rt63-bsp-yocto-i.mx6-pd18.1.2 - armv7l
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/root/tpictest/cmake-build-remote-debug/CMakeFiles/3.8.2/CompilerIdC/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_c1033/fast"
+/usr/bin/make -f CMakeFiles/cmTC_c1033.dir/build.make CMakeFiles/cmTC_c1033.dir/build
+make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_c1033.dir/testCCompiler.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_c1033.dir/testCCompiler.c.o   -c /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_c1033
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c1033.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_c1033.dir/testCCompiler.c.o  -o cmTC_c1033 
+make[1]: Leaving directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_bb5d6/fast"
+/usr/bin/make -f CMakeFiles/cmTC_bb5d6.dir/build.make CMakeFiles/cmTC_bb5d6.dir/build
+make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.8/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_bb5d6
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bb5d6.dir/link.txt --verbose=1
+/usr/bin/cc     -v CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o  -o cmTC_bb5d6 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/cc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/lto-wrapper
+Target: arm-phytec-linux-gnueabi
+Configured with: ../../../../../../work-shared/gcc-7.3.0-r0/gcc-7.3.0/configure --build=x86_64-linux --host=arm-phytec-linux-gnueabi --target=arm-phytec-linux-gnueabi --prefix=/usr --exec_prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/libexec --datadir=/usr/share --sysconfdir=/etc --sharedstatedir=/com --localstatedir=/var --libdir=/usr/lib --includedir=/usr/include --oldincludedir=/usr/include --infodir=/usr/share/info --mandir=/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/home/jb/VolkeOS/build/tmp/work/cortexa9hf-neon-phytec-linux-gnueabi/gcc/7.3.0-r0/recipe-sysroot --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-phytec-linux-gnueabi- --without-local-prefix --enable-lto --enable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-float=hard --with-sysroot=/ --with-build-sysroot=/home/jb/VolkeOS/build/tmp/work/cortexa9hf-neon-phytec-linux-gnueabi/gcc/7.3.0-r0/recipe-sysroot --with-gxx-include-dir=/usr/include/c++/7.3.0 --without-long-double-128 --disable-static --enable-nls --enable-initfini-array --with-arch=armv7-a
+Thread model: posix
+gcc version 7.3.0 (GCC) 
+COMPILER_PATH=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/libexec/gcc/arm-phytec-linux-gnueabi/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../../arm-phytec-linux-gnueabi/bin/
+LIBRARY_PATH=/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../:/lib/:/usr/lib/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb5d6' '-march=armv7-a' '-mfloat-abi=hard' '-mtls-dialect=gnu'
+ /usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/collect2 -plugin /usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc5KWycR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr --hash-style=gnu -dynamic-linker /lib/ld-linux-armhf.so.3 -X -m armelf_linux_eabi -o cmTC_bb5d6 /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crt1.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crti.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtbegin.o -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0 -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0 -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../.. -L/usr/lib/arm-phytec-linux-gnueabi/7.3.0 CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtend.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb5d6' '-march=armv7-a' '-mfloat-abi=hard' '-mtls-dialect=gnu'
+make[1]: Leaving directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_bb5d6/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_bb5d6.dir/build.make CMakeFiles/cmTC_bb5d6.dir/build]
+  ignore line: [make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.8/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_bb5d6]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bb5d6.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc     -v CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o  -o cmTC_bb5d6 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/cc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/lto-wrapper]
+  ignore line: [Target: arm-phytec-linux-gnueabi]
+  ignore line: [Configured with: ../../../../../../work-shared/gcc-7.3.0-r0/gcc-7.3.0/configure --build=x86_64-linux --host=arm-phytec-linux-gnueabi --target=arm-phytec-linux-gnueabi --prefix=/usr --exec_prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/libexec --datadir=/usr/share --sysconfdir=/etc --sharedstatedir=/com --localstatedir=/var --libdir=/usr/lib --includedir=/usr/include --oldincludedir=/usr/include --infodir=/usr/share/info --mandir=/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/home/jb/VolkeOS/build/tmp/work/cortexa9hf-neon-phytec-linux-gnueabi/gcc/7.3.0-r0/recipe-sysroot --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-phytec-linux-gnueabi- --without-local-prefix --enable-lto --enable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-float=hard --with-sysroot=/ --with-build-sysroot=/home/jb/VolkeOS/build/tmp/work/cortexa9hf-neon-phytec-linux-gnueabi/gcc/7.3.0-r0/recipe-sysroot --with-gxx-include-dir=/usr/include/c++/7.3.0 --without-long-double-128 --disable-static --enable-nls --enable-initfini-array --with-arch=armv7-a]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 7.3.0 (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/libexec/gcc/arm-phytec-linux-gnueabi/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../../arm-phytec-linux-gnueabi/bin/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../:/lib/:/usr/lib/arm-phytec-linux-gnueabi/7.3.0/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb5d6' '-march=armv7-a' '-mfloat-abi=hard' '-mtls-dialect=gnu']
+  link line: [ /usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/collect2 -plugin /usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc5KWycR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr --hash-style=gnu -dynamic-linker /lib/ld-linux-armhf.so.3 -X -m armelf_linux_eabi -o cmTC_bb5d6 /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crt1.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crti.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtbegin.o -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0 -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0 -L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../.. -L/usr/lib/arm-phytec-linux-gnueabi/7.3.0 CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtend.o /usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crtn.o]
+    arg [/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/libexec/gcc/arm-phytec-linux-gnueabi/7.3.0/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/cc5KWycR.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [--sysroot=/] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib/ld-linux-armhf.so.3] ==> ignore
+    arg [-X] ==> ignore
+    arg [-m] ==> ignore
+    arg [armelf_linux_eabi] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_bb5d6] ==> ignore
+    arg [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crt1.o] ==> ignore
+    arg [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crti.o] ==> ignore
+    arg [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtbegin.o] ==> ignore
+    arg [-L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0] ==> dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0]
+    arg [-L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0] ==> dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0]
+    arg [-L/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../..] ==> dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../..]
+    arg [-L/usr/lib/arm-phytec-linux-gnueabi/7.3.0] ==> dir [/usr/lib/arm-phytec-linux-gnueabi/7.3.0]
+    arg [CMakeFiles/cmTC_bb5d6.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../crtn.o] ==> ignore
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  collapse library dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0] ==> [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0]
+  collapse library dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../../arm-phytec-linux-gnueabi/7.3.0] ==> [/usr/lib/arm-phytec-linux-gnueabi/7.3.0]
+  collapse library dir [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0/../../..] ==> [/usr/lib]
+  collapse library dir [/usr/lib/arm-phytec-linux-gnueabi/7.3.0] ==> [/usr/lib/arm-phytec-linux-gnueabi/7.3.0]
+  implicit libs: [c]
+  implicit dirs: [/usr/lib/gcc/arm-phytec-linux-gnueabi/7.3.0;/usr/lib/arm-phytec-linux-gnueabi/7.3.0;/usr/lib]
+  implicit fwks: []
+
+
+
+
+Detecting C [-std=c11] compiler features compiled with the following output:
+Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_a4034/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a4034.dir/build.make CMakeFiles/cmTC_a4034.dir/build
+make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a4034.dir/feature_tests.c.o
+/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_a4034.dir/feature_tests.c.o   -c /root/tpictest/cmake-build-remote-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_a4034
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a4034.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_a4034.dir/feature_tests.c.o  -o cmTC_a4034 
+make[1]: Leaving directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:1c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c99] compiler features compiled with the following output:
+Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_1e58c/fast"
+/usr/bin/make -f CMakeFiles/cmTC_1e58c.dir/build.make CMakeFiles/cmTC_1e58c.dir/build
+make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1e58c.dir/feature_tests.c.o
+/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_1e58c.dir/feature_tests.c.o   -c /root/tpictest/cmake-build-remote-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_1e58c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1e58c.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_1e58c.dir/feature_tests.c.o  -o cmTC_1e58c 
+make[1]: Leaving directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c90] compiler features compiled with the following output:
+Change Dir: /root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_55838/fast"
+/usr/bin/make -f CMakeFiles/cmTC_55838.dir/build.make CMakeFiles/cmTC_55838.dir/build
+make[1]: Entering directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_55838.dir/feature_tests.c.o
+/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_55838.dir/feature_tests.c.o   -c /root/tpictest/cmake-build-remote-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_55838
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_55838.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_55838.dir/feature_tests.c.o  -o cmTC_55838 
+make[1]: Leaving directory '/root/tpictest/cmake-build-remote-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:0c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:0c_variadic_macros
