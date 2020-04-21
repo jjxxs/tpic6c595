@@ -1,9 +1,9 @@
-/*
+/**
  * This driver uses four GPIOs to bitbang the Texas Instruments TPIC595 Power Logic
  * 8-Bit Shift Register. This drivers makes the shift-register accessible through
  * a character-device. A button can be used to trigger an interrupt which can
  * be used to clear the shift-register or provide some other functionality which
- * can be configured through ioctl.
+ * can be configured through ioctl. See tpic6c595.h for supported ioctl-requests.
  *
  * Example Device-Tree entry:
  * ----------------------------
@@ -37,21 +37,19 @@
 #define TPIC6C595_DEV_MAJOR 191
 
 /* time to wait between gpio-state switches */
-#define TPIC6C595_WRITE_UDELAY 10
+#define TPIC6C595_BITBANG_UDELAY 10
 
 /* time to wait between flashes when using the button to flash */
-#define TPIC6C595_BUTTON_DURATION 50
+#define TPIC6C595_EFFECT_DURATION 50
 
-/* bits per tpic6c595 */
-#define TPIC6C595_BIT_COUNT 8
+/* byte per tpic6c595 */
+#define TPIC6C595_DEV_BYTES 1
 
-/* size of the device-drivers buffer*/
+/* size of the device-drivers buffer */
 #define TPIC6C595_BUFFER_SIZE 1024
 
 /* this drivers class, initialized in the __init routine */
 static struct class *tpic6c595_class;
-
-static long tpic6c595_button_duration = TPIC6C595_BUTTON_DURATION;
 
 /* structure to represent a tpic6c595 device */
 struct tpic6c595_dev {
@@ -62,8 +60,11 @@ struct tpic6c595_dev {
     u8               mode;
     u8               buf[TPIC6C595_BUFFER_SIZE];
     int              curlen;
-    int              curval;
-    u8               curdir;
+    u64              chase_curval;
+    u8               chase_curdir;
+    long             dev_size;
+    long             effect_duration;
+    long             bitbang_delay;
     struct gpio_desc *gpio_srck;
     struct gpio_desc *gpio_rck;
     struct gpio_desc *gpio_g;
@@ -78,32 +79,34 @@ static int tpic6c595_open(struct inode *node, struct file *fd);
 static ssize_t tpic6c595_write(struct file* fd, const char __user *buf, size_t len, loff_t *off);
 static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg);
 
+/**
+ * Writes the devices current buffer to the device. This function
+ * does the actual gpio-bitbanging to communicate with the hardware.
+ *
+ * @param dev to write its buffer to
+ * @return count of bytes written
+ */
 static ssize_t write_buffer(struct tpic6c595_dev *dev) {
-    int i, j, k, val;
+    int i, j;
 
     /* set G-pin to disable output */
     gpiod_set_value(dev->gpio_g, 1);
     udelay(TPIC6C595_WRITE_UDELAY);
 
-    /* write the buffer in chunks of length dev->daisy_chain */
-    for (i = 0; i < dev->curlen; i+=dev->daisy_chain) {
+    /* write byte for byte in the buffer */
+    for (i = 0; i < dev->curlen; i++) {
 
-        /* write every byte in the chunk */
-        for (k = dev->daisy_chain - 1; k >= 0; k--) {
+        /* write every bit in the byte, lsb */
+        for (j = 7; j >= 0; j--) {
+            /* set serial-data pin */
+            val = ((unsigned char)dev->buf[i+k] & (1u << j)) > 0;
+            gpiod_set_value(dev->gpio_ser_in, val);
 
-            /* write every bit in the byte, lsb */
-            for (j = 7; j >= 0; j--) {
-                /* set serial-data pin */
-                val = ((unsigned char)dev->buf[i+k] & (1u << j)) > 0;
-                gpiod_set_value(dev->gpio_ser_in, val);
-
-                /* set SRCK */
-                udelay(TPIC6C595_WRITE_UDELAY);
-                gpiod_set_value(dev->gpio_srck, 1);
-                udelay(TPIC6C595_WRITE_UDELAY);
-                gpiod_set_value(dev->gpio_srck, 0);
-            }
-
+            /* set SRCK */
+            udelay(TPIC6C595_WRITE_UDELAY);
+            gpiod_set_value(dev->gpio_srck, 1);
+            udelay(TPIC6C595_WRITE_UDELAY);
+            gpiod_set_value(dev->gpio_srck, 0);
         }
 
         /* set & unset RCK */
@@ -134,40 +137,70 @@ static int tpic6c595_open(struct inode *node, struct file *fd) {
     return 0;
 }
 
+/**
+ * Writes to the device.
+ *
+ * @param fd to write to
+ * @param buf to write
+ * @param len of the buffer
+ * @param off in the buffer
+ * @return count of bytes written
+ */
 static ssize_t tpic6c595_write(struct file* fd, const char __user *buf, size_t len, loff_t *off) {
     struct tpic6c595_dev *dev = fd->private_data;
+    size_t total, cur, tx = 0;
 
-    if (len > TPIC6C595_BUFFER_SIZE) {
-        dev_err(dev->dev, "length exceeds buffer size");
-        return -ENOMEM;
+    for (total = 0; total < len; total += TPIC6C595_BUFFER_SIZE) {
+
+        /* copy buffer_size at most per transfer */
+        cur = len - total > TPIC6C595_BUFFER_SIZE ? TPIC6C595_BUFFER_SIZE : len - total;
+        if (copy_from_user(dev->buf, &buf[total], cur) != 0) {
+            dev_err(dev->dev, "failed to copy from user");
+            return -EBADE;
+        }
+
+        /* write the current buffer */
+        dev->curlen = cur;
+        tx += write_buffer(dev);
     }
 
-    if (copy_from_user(dev->buf, buf, len) != 0) {
-        dev_err(dev->dev, "failed to copy from user");
-        return -EBADE;
-    }
-
-    dev->curlen = len;
-
-    /* write buffer to the device */
-    return write_buffer(dev);
+    return tx;
 }
 
+/**
+ * Configures the device.
+ *
+ * @param fd to configure
+ * @param req configuration request
+ * @param arg configuration payload
+ * @return 0 on success, -EINVAL on failure
+ */
 static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg) {
     long ret = 0;
     struct tpic6c595_dev *dev = fd->private_data;
 
     switch (req) {
+
         case TPIC6C595_IOCTL_BTN:
             dev_err(dev->dev, "setting mode=%ld", arg);
             dev->mode = arg;
             break;
 
-        case TPIC6C595_IOCTL_DAISY_CHAIN:
-            dev_err(dev->dev, "setting daisy-chain=%ld", arg);
-            dev->daisy_chain = (int)arg;
+        case TPIC6C595_IOCTL_EFFECT_DURATION:
+            dev_info(dev->dev, "setting effect_duration=%ld", arg);
+            dev->effect_duration = arg;
             break;
-        
+
+        case TPIC6C595_IOCTL_BITBANG_DELAY:
+            dev_info(dev->dev, "setting bitbang_delay=%ld", arg);
+            dev->bitbang_udelay = arg;
+            break;
+
+        case TPIC6C595_IOCTL_SIZE:
+            dev_info(dev->dev, "setting dev_size=%ld", arg);
+            dev->dev_size = arg;
+            break;
+
         default:
             ret = -EINVAL;
             break;
@@ -177,17 +210,27 @@ static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg
 }
 
 static const struct file_operations tpic6c595_fops = {
-        .write          = tpic6c595_write,
-        .open           = tpic6c595_open,
-        .llseek         = no_llseek,
+        .write          = tpic6c595_write, /* write to the device */
+        .open           = tpic6c595_open,  /* open the device */
+        .llseek         = no_llseek,       /* don't support seek */
         .unlocked_ioctl = tpic6c595_ioctl, /* primary interface to access the driver from userspace */
 };
 
+/* used to map device-tree entries to the matching driver */
 static const struct of_device_id tpic_dt_ids[] = {
         { .compatible = "texasinstruments,tpic6c595" },
         { /* sentinel */ },
 };
 
+/**
+ * Top-half of the interrupt-handler triggered by the button. If the button
+ * was configured using ioctl() to have some functionality the top-half
+ * will wake up the bottom-half to be executed.
+ *
+ * @param irq the interrupt request
+ * @param dev_id the device that triggered the interrupt
+ * @return IRQ_NONE if interrupts are disabled, IRQ_WAKE_THREAD otherwise
+ */
 static irqreturn_t tpic6c595_btn_irq(int irq, void *dev_id) {
     struct tpic6c595_dev *dev = dev_id;
 
@@ -199,89 +242,126 @@ static irqreturn_t tpic6c595_btn_irq(int irq, void *dev_id) {
     return IRQ_WAKE_THREAD;
 }
 
+/**
+ * Clears the device, e.g. overwrites it with zeroes.
+ *
+ * @param dev the device to clear
+ */
 static void tpic6c595_clear(struct tpic6c595_dev *dev) {
     int i;
 
-    dev->curlen = dev->daisy_chain;
-
-    for (i = 0; i < dev->daisy_chain; i++)
+    /* fill the buffer with zeroes and write them*/
+    dev->curlen = tpic_dev->dev_size;
+    for (i = 0; i < tpic_dev->dev_size; i++)
         dev->buf[i] = 0x00;
     write_buffer(dev);
 }
 
+/**
+ * Flashes the device, e.g. fills it with zeroes, waits
+ * dev->effect_duration and then fills it with ones.
+ *
+ * @param dev the device to flash
+ */
 static void tpic6c595_flash(struct tpic6c595_dev *dev) {
     int i;
 
-    dev->curlen = dev->daisy_chain;
+    dev->curlen = dev->dev_size;
 
-    for (i = 0; i < dev->daisy_chain; i++)
+    /* write zeroes and wait */
+    for (i = 0; i < dev->dev_size; i++)
         dev->buf[i] = 0x00;
     write_buffer(dev);
-    msleep(tpic6c595_flash_duration);
+    msleep(dev->effect_duration);
 
-    for (i = 0; i < dev->daisy_chain; i++)
+    /* write ones and wait */
+    for (i = 0; i < dev->dev_size; i++)
         dev->buf[i] = 0xff;
     write_buffer(dev);
     msleep(tpic6c595_flash_duration);
 }
 
-static void tpic6c595_nightrider(struct tpic6c595_dev *dev) {
-    union u16_to_u8 {
-        u16 val;
-        u8  parts[sizeof(u16)];
-    };
+/* helper union to easily convert u64 into bytes */
+union u64_to_u8 {
+    u64 val;
+    u8  parts[sizeof(u64)];
+};
 
-    if (dev->nightrider_dir == 1)
-        dev->nightrider_val = dev->nightrider_val << 1;
+/**
+ * Chases the devices value, e.g. increases the value until the limit
+ * is reached then starts decreasing the value until the value one.
+ * This is similar to the 'knightrider'-effect.
+ *
+ * @param dev the device to apply the chase-effect to
+ */
+static void tpic6c595_chase(struct tpic6c595_dev *dev) {
+    int i;
+
+    /* switch direction on begin/end of value-range*/
+    if (dev->chase_curval == 1)
+        dev->chase_curdir = 1;
+    else if (dev->chase_curval == (1u << (dev->dev_size * 8 - 1)))
+        dev->chase_curdir = 0;
+
+    /* increase/decrease value according to current direction */
+    if (dev->chase_curdir == 1)
+        dev->chase_curval = dev->chase_curval << 1;
     else
-        dev->nightrider_val = dev->nightrider_val >> 1;
+        dev->chase_curval = dev->chase_curval >> 1;
 
-    if (dev->nightrider_val == 0) {
-        if (dev->nightrider_dir == 1) {
-            dev->nightrider_dir = 0;
-            dev->nightrider_val = 1u << 14;
-        } else {
-            dev->nightrider_dir = 1;
-            dev->nightrider_val = 2u;
-        }
-    }
-
-    union u16_to_u8 tmp;
-    tmp.val = dev->nightrider_val;
-    dev->buf[0] = tmp.parts[0];
-    dev->buf[1] = tmp.parts[1];
-    dev->curlen = 2;
+    /* copy value to buffer and write */
+    union u64_to_u8 tmp;
+    tmp.val = chase_curval;
+    dev->curlen = dev->dev_size;
+    for (i = 0; i < sizeof(u64); i++)
+        dev->buf[i] = tmp.parts[i];
     write_buffer(dev);
     msleep(tpic6c595_flash_duration);
 }
 
+/**
+ * Bottom-half of the interrupt-handler. Performs an action according
+ * to the devices mode which can be configured through ioctl().
+ *
+ * @param irq the interrupt request
+ * @param dev_id the device that triggered the interrupt
+ * @return always IRQ_HANDLED
+ */
 static irqreturn_t tpic6c595_btn_irq_threaded(int irq, void *dev_id) {
     struct tpic6c595_dev *dev = dev_id;
 
     switch (dev->mode) {
         case TPIC6C595_MODE_BTN_CLEAR:
-            dev_err(dev->dev, "clearing\n");
+            dev_info(dev->dev, "clearing");
             tpic6c595_clear(dev);
             break;
 
         case TPIC6C595_MODE_BTN_FLASH:
-            dev_err(dev->dev, "flashing\n");
+            dev_info(dev->dev, "flashing");
             tpic6c595_flash(dev);
             break;
 
-        case TPIC6C595_MODE_BTN_NIGHTRIDER:
-            dev_err(dev->dev, "nightriding\n");
-            tpic6c595_nightrider(dev);
+        case TPIC6C595_MODE_BTN_CHASER:
+            dev_info(dev->dev, "chasing");
+            tpic6c595_chase(dev);
             break;
 
         default:
-            dev_err(dev->dev, "unsupported mode=%d\n", dev->mode);
+            dev_err(dev->dev, "unsupported mode=%ld\n", dev->mode);
             break;
     }
 
     return IRQ_HANDLED;
 }
 
+/**
+ * Probing. Responsible for the initialization of a concrete
+ * device after a device-tree-entry was matched to a device
+ * managed by this driver.
+ *
+ * @param pdev the platform_device to probe
+ * @return zero on success, non-zero error-code on failure
+ */
 static int tpic6c595_probe(struct platform_device *pdev) {
     int err;
     struct tpic6c595_dev *tpic_dev;
@@ -294,9 +374,11 @@ static int tpic6c595_probe(struct platform_device *pdev) {
         return -ENOMEM;
 
     /* set defaults */
-    tpic_dev->mode           = TPIC6C595_MODE_BTN_DISABLED;
-    tpic_dev->daisy_chain    = 1;
-    tpic_dev->nightrider_val = 1;
+    tpic_dev->mode            = TPIC6C595_MODE_BTN_DISABLED;
+    tpic_dev->write_udelay    = TPIC6C595_WRITE_UDELAY;
+    tpic_dev->effect_duration = TPIC6C595_EFFECT_DURATION;
+    tpic_dev->dev_size        = TPIC6C595_DEV_BYTES;
+    tpic_dev->chase_curval    = 1;
 
     /* gpio_g */
     tpic_dev->gpio_g = gpiod_get(&pdev->dev, "g", GPIOD_OUT_HIGH);
@@ -375,11 +457,18 @@ static int tpic6c595_probe(struct platform_device *pdev) {
     }
     pr_info("registered interrupt-handler for irq_btn=%d\n", tpic_dev->irq_btn);
 
-    pr_err("tpic6c595 probe done\n");
+    pr_info("tpic6c595 probe done\n");
 
     return 0;
 }
 
+/**
+ * Removes a previously initialized device. This frees all resources associated
+ * with the given device.
+ *
+ * @param pdev the platform-device to remove
+ * @return zero on success, non-zero error-code on failure
+ */
 static int tpic6c595_remove(struct platform_device *pdev) {
     struct tpic6c595_dev *dev = platform_get_drvdata(pdev);
 
@@ -407,11 +496,15 @@ static int tpic6c595_remove(struct platform_device *pdev) {
     if (dev->gpio_btn)
         gpiod_put(dev->gpio_btn);
 
+    /* free memory */
+    kfree(dev);
+
     pr_info("removed tpic6c595\n");
 
     return 0;
 }
 
+/* platform-driver representation of this driver */
 static struct platform_driver tpic6c595_driver = {
         .driver = {
                 .name           = "tpic6c595",
@@ -422,6 +515,12 @@ static struct platform_driver tpic6c595_driver = {
         .remove = tpic6c595_remove,
 };
 
+/**
+ * Initializes this driver. E.g. creates it's class, registers with the system
+ * as a character-device etc.
+ *
+ * @return zero on success, non-zero error-code on failure
+ */
 static int __init tpic6c595_init(void) {
     int status;
 
@@ -453,6 +552,10 @@ static int __init tpic6c595_init(void) {
 }
 module_init(tpic6c595_init);
 
+/**
+ * Uninitializes this driver, e.g. undoes everything
+ * that was done during initialization.
+ */
 static void __exit tpic6c595_exit(void) {
     /* unregister platform-driver */
     platform_driver_unregister(&tpic6c595_driver);
@@ -470,4 +573,4 @@ module_exit(tpic6c595_exit);
 MODULE_DESCRIPTION("Driver for the Texas Instruments TPIC6C595 8-bit shift register");
 MODULE_AUTHOR("Joscha Behrmann, <behrmann@volke-muc.de>");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("0.1");
+MODULE_VERSION("1.0");
