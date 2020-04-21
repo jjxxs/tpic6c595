@@ -1,21 +1,21 @@
 /*
  * This driver uses four GPIOs to bitbang the Texas Instruments TPIC595 Power Logic
- * 8-Bit Shift Register and make it accessible as a character-device.
- *
- * A fifth gpio is used as a button to receive input from the user. Its functionality
+ * 8-Bit Shift Register. This drivers makes the shift-register accessible through
+ * a character-device. A button can be used to trigger an interrupt which can
+ * be used to clear the shift-register or provide some other functionality which
  * can be configured through ioctl.
  *
- *      Example Device-Tree entry:
- *      ----------------------------
- *          shift_register {
- *              compatible = "texasinstruments,tpic6c595";
- *              status = "okay";
- *              btn-gpios = <&gpio6 17 GPIO_ACTIVE_HIGH>;
- *              ser-in-gpios = <&gpio6 18 GPIO_ACTIVE_HIGH>;
- *              g-gpios = <&gpio7 0 GPIO_ACTIVE_HIGH>;
- *              srck-gpios = <&gpio7 1 GPIO_ACTIVE_HIGH>;
- *              rck-gpios = <&gpio7 7 GPIO_ACTIVE_HIGH>;
- *          };
+ * Example Device-Tree entry:
+ * ----------------------------
+ *    shift_register {
+ *       compatible = "texasinstruments,tpic6c595";
+ *       status = "okay";
+ *       btn-gpios = <&gpio6 17 GPIO_ACTIVE_HIGH>;
+ *       ser-in-gpios = <&gpio6 18 GPIO_ACTIVE_HIGH>;
+ *       g-gpios = <&gpio7 0 GPIO_ACTIVE_HIGH>;
+ *       srck-gpios = <&gpio7 1 GPIO_ACTIVE_HIGH>;
+ *       rck-gpios = <&gpio7 7 GPIO_ACTIVE_HIGH>;
+ *    };
  */
 
 #include <linux/module.h>
@@ -33,15 +33,27 @@
 #include <linux/uaccess.h>
 #include "tpic6c595.h"
 
-#define TPIC6C595_DEV_MAJOR             191
-#define TPIC6C595_BUFFER_SIZE           1024
-#define TPIC6C595_WRITE_UDELAY          10
-#define TPIC6C595_FLASH_DURATION        50
+/* major-number of this device */
+#define TPIC6C595_DEV_MAJOR 191
 
+/* time to wait between gpio-state switches */
+#define TPIC6C595_WRITE_UDELAY 10
+
+/* time to wait between flashes when using the button to flash */
+#define TPIC6C595_BUTTON_DURATION 50
+
+/* bits per tpic6c595 */
+#define TPIC6C595_BIT_COUNT 8
+
+/* size of the device-drivers buffer*/
+#define TPIC6C595_BUFFER_SIZE 1024
+
+/* this drivers class, initialized in the __init routine */
 static struct class *tpic6c595_class;
-static long tpic6c595_flash_duration = TPIC6C595_FLASH_DURATION;
 
-/* represents a single tpic6c595 device */
+static long tpic6c595_button_duration = TPIC6C595_BUTTON_DURATION;
+
+/* structure to represent a tpic6c595 device */
 struct tpic6c595_dev {
     struct device    *dev;
     struct cdev      cdev;
@@ -50,6 +62,8 @@ struct tpic6c595_dev {
     u8               mode;
     u8               buf[TPIC6C595_BUFFER_SIZE];
     int              curlen;
+    int              curval;
+    u8               curdir;
     struct gpio_desc *gpio_srck;
     struct gpio_desc *gpio_rck;
     struct gpio_desc *gpio_g;
@@ -58,35 +72,38 @@ struct tpic6c595_dev {
 };
 
 /*
- * Forward-declarations
+ * forward-declarations
  */
 static int tpic6c595_open(struct inode *node, struct file *fd);
 static ssize_t tpic6c595_write(struct file* fd, const char __user *buf, size_t len, loff_t *off);
 static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg);
 
 static ssize_t write_buffer(struct tpic6c595_dev *dev) {
-    unsigned int i, j, val;
-
-    udelay(TPIC6C595_WRITE_UDELAY);
+    int i, j, k, val;
 
     /* set G-pin to disable output */
     gpiod_set_value(dev->gpio_g, 1);
     udelay(TPIC6C595_WRITE_UDELAY);
 
-    /* write every byte in the buffer */
-    for (i = 0; i < dev->curlen; i++) {
+    /* write the buffer in chunks of length dev->daisy_chain */
+    for (i = 0; i < dev->curlen; i+=dev->daisy_chain) {
 
-        /* write every bit in the byte */
-        for (j = 0; j < 8; j++) {
-            /* set serial-data pin */
-            val = ((unsigned char)dev->buf[i] & (1u << j)) > 0;
-            gpiod_set_value(dev->gpio_ser_in, val);
+        /* write every byte in the chunk */
+        for (k = dev->daisy_chain - 1; k >= 0; k--) {
 
-            /* set SRCK */
-            udelay(TPIC6C595_WRITE_UDELAY);
-            gpiod_set_value(dev->gpio_srck, 1);
-            udelay(TPIC6C595_WRITE_UDELAY);
-            gpiod_set_value(dev->gpio_srck, 0);
+            /* write every bit in the byte, lsb */
+            for (j = 7; j >= 0; j--) {
+                /* set serial-data pin */
+                val = ((unsigned char)dev->buf[i+k] & (1u << j)) > 0;
+                gpiod_set_value(dev->gpio_ser_in, val);
+
+                /* set SRCK */
+                udelay(TPIC6C595_WRITE_UDELAY);
+                gpiod_set_value(dev->gpio_srck, 1);
+                udelay(TPIC6C595_WRITE_UDELAY);
+                gpiod_set_value(dev->gpio_srck, 0);
+            }
+
         }
 
         /* set & unset RCK */
@@ -142,8 +159,13 @@ static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg
 
     switch (req) {
         case TPIC6C595_IOCTL_BTN:
-            dev_err(dev->dev, "mode=%ld", arg);
+            dev_err(dev->dev, "setting mode=%ld", arg);
             dev->mode = arg;
+            break;
+
+        case TPIC6C595_IOCTL_DAISY_CHAIN:
+            dev_err(dev->dev, "setting daisy-chain=%ld", arg);
+            dev->daisy_chain = (int)arg;
             break;
         
         default:
@@ -177,26 +199,79 @@ static irqreturn_t tpic6c595_btn_irq(int irq, void *dev_id) {
     return IRQ_WAKE_THREAD;
 }
 
+static void tpic6c595_clear(struct tpic6c595_dev *dev) {
+    int i;
+
+    dev->curlen = dev->daisy_chain;
+
+    for (i = 0; i < dev->daisy_chain; i++)
+        dev->buf[i] = 0x00;
+    write_buffer(dev);
+}
+
+static void tpic6c595_flash(struct tpic6c595_dev *dev) {
+    int i;
+
+    dev->curlen = dev->daisy_chain;
+
+    for (i = 0; i < dev->daisy_chain; i++)
+        dev->buf[i] = 0x00;
+    write_buffer(dev);
+    msleep(tpic6c595_flash_duration);
+
+    for (i = 0; i < dev->daisy_chain; i++)
+        dev->buf[i] = 0xff;
+    write_buffer(dev);
+    msleep(tpic6c595_flash_duration);
+}
+
+static void tpic6c595_nightrider(struct tpic6c595_dev *dev) {
+    union u16_to_u8 {
+        u16 val;
+        u8  parts[sizeof(u16)];
+    };
+
+    if (dev->nightrider_dir == 1)
+        dev->nightrider_val = dev->nightrider_val << 1;
+    else
+        dev->nightrider_val = dev->nightrider_val >> 1;
+
+    if (dev->nightrider_val == 0) {
+        if (dev->nightrider_dir == 1) {
+            dev->nightrider_dir = 0;
+            dev->nightrider_val = 1u << 14;
+        } else {
+            dev->nightrider_dir = 1;
+            dev->nightrider_val = 2u;
+        }
+    }
+
+    union u16_to_u8 tmp;
+    tmp.val = dev->nightrider_val;
+    dev->buf[0] = tmp.parts[0];
+    dev->buf[1] = tmp.parts[1];
+    dev->curlen = 2;
+    write_buffer(dev);
+    msleep(tpic6c595_flash_duration);
+}
+
 static irqreturn_t tpic6c595_btn_irq_threaded(int irq, void *dev_id) {
     struct tpic6c595_dev *dev = dev_id;
 
     switch (dev->mode) {
         case TPIC6C595_MODE_BTN_CLEAR:
             dev_err(dev->dev, "clearing\n");
-            dev->buf[0] = 0x00;
-            dev->curlen = 1;
-            write_buffer(dev);
+            tpic6c595_clear(dev);
             break;
 
         case TPIC6C595_MODE_BTN_FLASH:
             dev_err(dev->dev, "flashing\n");
-            dev->curlen = 1;
-            dev->buf[0] = 0x00;
-            write_buffer(dev);
-            msleep(tpic6c595_flash_duration);
-            dev->buf[0] = 0xff;
-            write_buffer(dev);
-            msleep(tpic6c595_flash_duration);
+            tpic6c595_flash(dev);
+            break;
+
+        case TPIC6C595_MODE_BTN_NIGHTRIDER:
+            dev_err(dev->dev, "nightriding\n");
+            tpic6c595_nightrider(dev);
             break;
 
         default:
@@ -218,10 +293,10 @@ static int tpic6c595_probe(struct platform_device *pdev) {
     if (!tpic_dev)
         return -ENOMEM;
 
-    pr_info("dev: %p", tpic_dev);
-
     /* set defaults */
-    tpic_dev->mode = TPIC6C595_MODE_BTN_DISABLED;
+    tpic_dev->mode           = TPIC6C595_MODE_BTN_DISABLED;
+    tpic_dev->daisy_chain    = 1;
+    tpic_dev->nightrider_val = 1;
 
     /* gpio_g */
     tpic_dev->gpio_g = gpiod_get(&pdev->dev, "g", GPIOD_OUT_HIGH);
