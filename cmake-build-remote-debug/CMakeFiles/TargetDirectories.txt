@@ -1,3 +1,0 @@
-/root/tpictest/cmake-build-remote-debug/CMakeFiles/rebuild_cache.dir
-/root/tpictest/cmake-build-remote-debug/CMakeFiles/tpic6c595.dir
-/root/tpictest/cmake-build-remote-debug/CMakeFiles/edit_cache.dir

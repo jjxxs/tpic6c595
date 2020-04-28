@@ -1,7 +1,9 @@
 /**
- * Simple test-program to demonstrate the tpic6c595-driver. Configures
- * the driver via ioctl() and writes all values from zero to maximum
- * possible value to the device.
+ * @file main.c
+ * @brief Test-program to demonstrate the tpic6c595 kernel-module.
+ *
+ * @details Demonstrates the functionality provided by the tpic6c595
+ * driver. Configures the driver via ioctl() and writes to the device.
  */
 #include <fcntl.h>
 #include <stdlib.h>

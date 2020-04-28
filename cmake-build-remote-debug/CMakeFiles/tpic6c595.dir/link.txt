@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/tpic6c595.dir/tpic6c595_test.c.o  -o tpic6c595 /usr/local/lib/libvolke.a 
