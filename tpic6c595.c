@@ -87,36 +87,36 @@ static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg
  * @return count of bytes written
  */
 static ssize_t write_buffer(struct tpic6c595_dev *dev) {
-    int i, j;
+    int i, j, val;
 
     /* set G-pin to disable output */
     gpiod_set_value(dev->gpio_g, 1);
-    udelay(TPIC6C595_WRITE_UDELAY);
+    udelay(dev->bitbang_delay);
 
     /* write byte for byte in the buffer */
-    for (i = 0; i < dev->curlen; i++) {
+    for (i = dev->curlen; i >= 0; i--) {
 
         /* write every bit in the byte, lsb */
         for (j = 7; j >= 0; j--) {
             /* set serial-data pin */
-            val = ((unsigned char)dev->buf[i+k] & (1u << j)) > 0;
+            val = ((unsigned char)dev->buf[i] & (1u << j)) > 0;
             gpiod_set_value(dev->gpio_ser_in, val);
 
             /* set SRCK */
-            udelay(TPIC6C595_WRITE_UDELAY);
+            udelay(dev->bitbang_delay);
             gpiod_set_value(dev->gpio_srck, 1);
-            udelay(TPIC6C595_WRITE_UDELAY);
+            udelay(dev->bitbang_delay);
             gpiod_set_value(dev->gpio_srck, 0);
         }
 
         /* set & unset RCK */
         gpiod_set_value(dev->gpio_rck, 1);
-        udelay(TPIC6C595_WRITE_UDELAY);
+        udelay(dev->bitbang_delay);
         gpiod_set_value(dev->gpio_rck, 0);
     }
 
     /* unset G-pin to enable output */
-    udelay(TPIC6C595_WRITE_UDELAY);
+    udelay(dev->bitbang_delay);
     gpiod_set_value(dev->gpio_g, 0);
 
     return dev->curlen;
@@ -193,7 +193,7 @@ static long tpic6c595_ioctl(struct file *fd, unsigned int req, unsigned long arg
 
         case TPIC6C595_IOCTL_BITBANG_DELAY:
             dev_info(dev->dev, "setting bitbang_delay=%ld", arg);
-            dev->bitbang_udelay = arg;
+            dev->bitbang_delay = arg;
             break;
 
         case TPIC6C595_IOCTL_SIZE:
@@ -251,8 +251,8 @@ static void tpic6c595_clear(struct tpic6c595_dev *dev) {
     int i;
 
     /* fill the buffer with zeroes and write them*/
-    dev->curlen = tpic_dev->dev_size;
-    for (i = 0; i < tpic_dev->dev_size; i++)
+    dev->curlen = dev->dev_size;
+    for (i = 0; i < dev->dev_size; i++)
         dev->buf[i] = 0x00;
     write_buffer(dev);
 }
@@ -278,7 +278,7 @@ static void tpic6c595_flash(struct tpic6c595_dev *dev) {
     for (i = 0; i < dev->dev_size; i++)
         dev->buf[i] = 0xff;
     write_buffer(dev);
-    msleep(tpic6c595_flash_duration);
+    msleep(dev->effect_duration);
 }
 
 /* helper union to easily convert u64 into bytes */
@@ -311,12 +311,12 @@ static void tpic6c595_chase(struct tpic6c595_dev *dev) {
 
     /* copy value to buffer and write */
     union u64_to_u8 tmp;
-    tmp.val = chase_curval;
+    tmp.val = dev->chase_curval;
     dev->curlen = dev->dev_size;
     for (i = 0; i < sizeof(u64); i++)
         dev->buf[i] = tmp.parts[i];
     write_buffer(dev);
-    msleep(tpic6c595_flash_duration);
+    msleep(dev->effect_duration);
 }
 
 /**
@@ -347,7 +347,7 @@ static irqreturn_t tpic6c595_btn_irq_threaded(int irq, void *dev_id) {
             break;
 
         default:
-            dev_err(dev->dev, "unsupported mode=%ld\n", dev->mode);
+            dev_err(dev->dev, "unsupported mode=%d\n", dev->mode);
             break;
     }
 
@@ -375,7 +375,7 @@ static int tpic6c595_probe(struct platform_device *pdev) {
 
     /* set defaults */
     tpic_dev->mode            = TPIC6C595_MODE_BTN_DISABLED;
-    tpic_dev->write_udelay    = TPIC6C595_WRITE_UDELAY;
+    tpic_dev->bitbang_delay    = TPIC6C595_BITBANG_UDELAY;
     tpic_dev->effect_duration = TPIC6C595_EFFECT_DURATION;
     tpic_dev->dev_size        = TPIC6C595_DEV_BYTES;
     tpic_dev->chase_curval    = 1;
@@ -506,13 +506,13 @@ static int tpic6c595_remove(struct platform_device *pdev) {
 
 /* platform-driver representation of this driver */
 static struct platform_driver tpic6c595_driver = {
-        .driver = {
-                .name           = "tpic6c595",
-                .of_match_table = of_match_ptr(tpic_dt_ids),
-                .owner          = THIS_MODULE,
-        },
-        .probe  = tpic6c595_probe,
-        .remove = tpic6c595_remove,
+    .driver = {
+        .name           = "tpic6c595",
+        .of_match_table = of_match_ptr(tpic_dt_ids),
+        .owner          = THIS_MODULE,
+    },
+    .probe  = tpic6c595_probe,
+    .remove = tpic6c595_remove,
 };
 
 /**

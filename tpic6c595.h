@@ -46,4 +46,14 @@
  */
 #define TPIC6C595_IOCTL_SIZE _IO(0xaa, 0x03)
 
+/**
+ * Sets the nth bit of the device. All other bits remain untouched.
+ */
+#define TPIC6C595_BIT_SET _IOW(0xaa, 0x04)
+
+/**
+ * Unsets the nth bit of the device. All other bits remain untouched.
+ */
+#define TPIC6C595_BIT_UNSET _IOW(0xaa, 0x05)
+
 #endif //TPIC6C595_TPIC6C595_H

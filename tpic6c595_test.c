@@ -13,6 +13,7 @@
 #include <log.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "tpic6c595.h"
 
 /* size of the device in bytes, e.g. the used device can keep two bytes */
@@ -20,7 +21,7 @@
 
 struct timespec ts = {
    .tv_sec = 0,
-   .tv_nsec = 10 * 1000 * 1000 /* 10ms */
+   .tv_nsec = 1 * 1000 * 1000 /* 1ms */
 };
 
 /* helper union to easily split a u16 into two u8s */
@@ -41,11 +42,17 @@ int main(int argc, char **argv) {
         fatal("failed to set size=%d\n", DEVICE_SIZE);
 
     /* write 0x0000 - 0xffff */
-    union u16_to_u8s tmp;
-    for (tmp.val = 0x0000; tmp.val <= 0xffff; tmp.val++) {
+    union u16_to_u8s tmp = {0};
+    while (true) {
         info("writing %d = 0x%02x 0x%02x\n", tmp.val, tmp.parts[0], tmp.parts[1]);
         if (write(fd, tmp.parts, sizeof(tmp.parts)) < sizeof(tmp.parts))
             fatal("failed to write to device\n");
+        tmp.val++;
+
+        // overflow, all values are written
+        if (tmp.val == 0)
+            break;
+
         nanosleep(&ts, NULL);
     }
 
