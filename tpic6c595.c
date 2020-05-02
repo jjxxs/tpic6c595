@@ -33,6 +33,9 @@
 #include <linux/uaccess.h>
 #include "tpic6c595.h"
 
+#define CREATE_TRACE_POINTS
+#include "tpic6c595-trace.h"
+
 /* major-number of this device */
 #define TPIC6C595_DEV_MAJOR 191
 
@@ -131,6 +134,8 @@ static ssize_t write_buffer(struct tpic6c595_dev *dev) {
  */
 static int tpic6c595_open(struct inode *node, struct file *fd) {
     struct tpic6c595_dev *dev = container_of(node->i_cdev, struct tpic6c595_dev, cdev);
+
+    trace_me_silly(1337, 1338);
 
     fd->private_data = dev;
 
