@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         fatal("failed to set size=%d\n", DEVICE_SIZE);
 
     /* write 0x0000 - 0xffff */
-    /*union u16_to_u8s tmp = {0};
+    union u16_to_u8s tmp = {0};
     while (true) {
         info("writing %d = 0x%02x 0x%02x\n", tmp.val, tmp.parts[0], tmp.parts[1]);
         if (write(fd, tmp.parts, sizeof(tmp.parts)) < sizeof(tmp.parts))
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
             break;
 
         nanosleep(&ts, NULL);
-    }*/
+    }
 
     /* set button to clear the leds when pressed */
     if (ioctl(fd, TPIC6C595_IOCTL_BTN, TPIC6C595_MODE_BTN_CLEAR) != 0)

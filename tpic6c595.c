@@ -39,10 +39,10 @@
 /* major-number of this device */
 #define TPIC6C595_DEV_MAJOR 191
 
-/* time to wait between gpio-state switches */
+/* time to wait in µs between gpio-state switches */
 #define TPIC6C595_BITBANG_UDELAY 10
 
-/* time to wait between flashes when using the button to flash */
+/* time to wait in ms between flashes when using the button to flash */
 #define TPIC6C595_EFFECT_DURATION 50
 
 /* byte per tpic6c595 */
