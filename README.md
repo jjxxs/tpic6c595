@@ -25,6 +25,6 @@ Ascending values from 0x0000 to 0xffff are written to the device:
 ![Counting light](media/count_small.gif "Counting lights")
 
 ### Development
-During development a test-setup was used and the the correctness of the signals were observed using an oscilloscope.
+During development a test-setup was used and the correctness of the signals was observed using an oscilloscope.
 
 ![Development breadboard](media/dev_breadboard.jpg "Development breadboard")
