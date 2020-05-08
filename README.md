@@ -13,14 +13,18 @@ This project was created to demonstrate the development of a linux-module. For d
 `tpic6c595_test.c` contains an example program that uses the driver to control the shift-register from userspace. A prototype PCB was soldered to show the functionality the of the driver. It uses two tpic6c595 shift-registers to supply a total of 16 outputs. These outputs can be accessed through pin-headers on the PCB and their status is indicated by LEDs.
 
 The button is configured to give a knight-rider like effect:
+
 ![Chaser light](media/chase_small.gif "Chaser lights")
 
-The button is configured to flash the ouputs:
+The button is configured to flash the outputs, doesn't look right on the gif because of the low frame-rate:
+
 ![Flash light](media/flash_small.gif "Flash lights")
 
 Ascending values from 0x0000 to 0xffff are written to the device:
+
 ![Counting light](media/count_small.gif "Counting lights")
 
 ### Development
 During development a test-setup was used and the the correctness of the signals were observed using an oscilloscope.
+
 ![Development breadboard](media/dev_breadboard.jpg "Development breadboard")
