@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     int fd;
 
     /* open device */
-    if ((fd = open("/dev/tpic6c59", O_RDWR)) < 0)
-        fatal("failed to open device, err=%s", strerror(errno));
+    if ((fd = open("/dev/tpic6c595.0", O_RDWR)) < 0)
+        fatal("failed to open device, err=%s, fd=%d", strerror(errno), fd);
 
     /* set to 16-bit mode, e.g. two chained registers */
     if (ioctl(fd, TPIC6C595_IOCTL_SIZE, DEVICE_SIZE) != 0)
