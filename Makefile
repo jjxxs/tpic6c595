@@ -1,7 +1,11 @@
-obj-m := tpic6c595.o
-
 SRC := $(shell pwd)
 KERNEL_SRC := /usr/src/kernel
+INCLUDES = -I. -I$(KERNEL_SRC)/include
+KBUILD_CFLAGS += -g
+
+obj-m := tpic6c595.o
+
+CFLAGS_tpic6c595.o = -I$(src)
 
 all:
 	$(MAKE) -C $(KERNEL_SRC) M=$(SRC)
